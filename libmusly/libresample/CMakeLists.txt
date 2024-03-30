@@ -13,6 +13,7 @@ add_library(musly_resample
 
 target_include_directories(musly_resample PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR})
+target_compile_features(musly_resample PUBLIC cxx_std_17)
 
 set(LIBMUSLY_LIBS
     ${LIBMUSLY_LIBS}

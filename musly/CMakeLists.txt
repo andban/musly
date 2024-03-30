@@ -17,4 +17,6 @@ add_executable(musly
 target_link_libraries(musly
     libmusly)
 
+target_compile_features(musly PUBLIC cxx_std_17)
+
 install(TARGETS musly DESTINATION bin)

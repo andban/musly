@@ -52,6 +52,7 @@ add_library(libmusly
     mutualproximity.cpp
     lib.cpp
     ${LIBMUSLY_EXTERNAL})
+target_compile_features(libmusly PUBLIC cxx_std_17)
 
 if(BUILD_STATIC)
     set_target_properties(libmusly
