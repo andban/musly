@@ -46,7 +46,10 @@ FetchContent_MakeAvailable(Eigen3)
 
 add_subdirectory(libresample)
 add_subdirectory(libmusly)
-add_subdirectory(musly)
+
+if (NOT WIN32 AND NOT MINGW)
+    add_subdirectory(musly)
+endif()
 
 if (BUILD_TEST)
     enable_testing()

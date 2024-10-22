@@ -80,13 +80,32 @@ if(APPLE)
     find_library(COREFOUNDATION_LIBRARY CoreFoundation)
     mark_as_advanced(AUDIOTOOLBOX_LIBRARY COREFOUNDATION_LIBRARY)
 
-    target_sources(libmusly PRIVATE src/decoders/coreaudio.cpp)
-    target_link_libraries(libmusly ${ADDITIONAL_LIBRARIES} ${AUDIOTOOLBOX_LIBRARY} ${COREFOUNDATION_LIBRARY})
-    target_compile_definitions(libmusly PRIVATE -DMUSLY_DECODER_COREAUDIO)
+    target_sources(libmusly 
+        PRIVATE src/decoders/coreaudio.cpp
+    )
+    target_link_libraries(libmusly 
+        ${AUDIOTOOLBOX_LIBRARY}
+        ${COREFOUNDATION_LIBRARY}
+    )
+    target_compile_definitions(libmusly
+        PRIVATE -DMUSLY_DECODER_COREAUDIO
+    )
 endif()
 
 if(WIN32 OR MINGW)
-    target_link_libraries(libmusly ws2_32)
+    target_sources(libmusly 
+        PRIVATE src/decoders/mediafoundation.cpp
+    )
+    target_link_libraries(libmusly 
+        ws2_32
+        Mf
+        Mfplat
+        mfreadwrite
+        mfuuid
+        ole32
+    )
+    target_compile_definitions(libmusly
+        PRIVATE -DMUSLY_DECODER_MEDIAFOUNDATION -DNOMINMAX -D_USE_MATH_DEFINES)
 endif()
 
 install(TARGETS libmusly 
