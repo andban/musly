@@ -52,7 +52,7 @@ target_compile_definitions(libmusly
 
 if(BUILD_STATIC)
     target_compile_definitions(libmusly
-        PUBLIC -DBUILD_STATIC
+        PUBLIC -DMUSLY_STATIC
     )
 endif()
 

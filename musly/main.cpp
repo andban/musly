@@ -27,7 +27,7 @@
 #include "fileiterator.h"
 #include "collectionfile.h"
 
-musly_jukebox *mj = 0;
+musly_jukebox mj = 0;
 
 int read_collectionfile(
     collection_file &cf,
@@ -65,12 +65,12 @@ int read_collectionfile(
     }
     else
     {
-        std::cout << "Initialized music similarity method: " << mj->method_name
+        std::cout << "Initialized music similarity method: " << musly_jukebox_methodname(mj)
                   << std::endl;
         std::cout << "~~~" << std::endl;
         std::cout << musly_jukebox_aboutmethod(mj) << std::endl;
         std::cout << "~~~" << std::endl;
-        std::cout << "Installed audio decoder: " << mj->decoder_name
+        std::cout << "Installed audio decoder: " << musly_jukebox_decodername(mj)
                   << std::endl;
     }
 
@@ -127,7 +127,7 @@ int read_collectionfile(
     return count;
 }
 
-bool read_jukebox(std::string &filename, musly_jukebox **jukebox, int *last_reinit)
+bool read_jukebox(std::string &filename, musly_jukebox *jukebox, int *last_reinit)
 {
     std::cout << "Reading jukebox file: " << filename << std::endl;
     if (FILE *f = fopen(filename.c_str(), "rb"))
@@ -143,7 +143,7 @@ bool read_jukebox(std::string &filename, musly_jukebox **jukebox, int *last_rein
     return false;
 }
 
-bool write_jukebox(std::string &filename, musly_jukebox *jukebox, int last_reinit)
+bool write_jukebox(std::string &filename, musly_jukebox jukebox, int last_reinit)
 {
     std::cout << "Writing jukebox file: " << filename << std::endl;
     if (FILE *f = fopen(filename.c_str(), "wb"))
@@ -398,7 +398,7 @@ struct similarity_comp
 
 std::vector<similarity_knn>
 compute_similarity(
-    musly_jukebox *mj,
+    musly_jukebox mj,
     int k,
     std::vector<int> &artists,
     musly_trackid seed,
@@ -760,16 +760,16 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        std::cout << "Initialized music similarity method: " << mj->method_name
+        std::cout << "Initialized music similarity method: " << musly_jukebox_methodname(mj)
                   << std::endl;
         std::cout << "~~~" << std::endl;
         std::cout << musly_jukebox_aboutmethod(mj) << std::endl;
         std::cout << "~~~" << std::endl;
-        std::cout << "Installed audio decoder: " << mj->decoder_name
+        std::cout << "Installed audio decoder: " << musly_jukebox_decodername(mj)
                   << std::endl;
         std::cout << "Initializing new collection: " << po.get_option_str("c") << std::endl;
         std::cout << "Initialization result: " << std::flush;
-        if (cf.write_header(mj->method_name))
+        if (cf.write_header(musly_jukebox_methodname(mj)))
         {
             std::cout << "OK." << std::endl;
         }
@@ -842,16 +842,16 @@ int main(int argc, char *argv[])
         int last_reinit = 0;
         if (!jukebox_file.empty())
         {
-            musly_jukebox *mj2 = NULL;
+            musly_jukebox mj2 = NULL;
             if (!read_jukebox(jukebox_file, &mj2, &last_reinit))
             {
                 std::cout << "Reading failed.";
             }
-            else if (strcmp(mj2->method_name, mj->method_name))
+            else if (strcmp(musly_jukebox_methodname(mj2), musly_jukebox_methodname(mj)))
             {
-                std::cout << "Jukebox file is for method '" << mj2->method_name
+                std::cout << "Jukebox file is for method '" << musly_jukebox_methodname(mj2)
                           << "', but collection file is for method '"
-                          << mj->method_name << "'.";
+                          << musly_jukebox_methodname(mj) << "'.";
             }
             else if (track_count < musly_jukebox_trackcount(mj2))
             {

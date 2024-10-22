@@ -250,7 +250,7 @@ void generate_music(float* out, int length, unsigned int seed = 0) {
 
 void test_method(std::string method) {
     std::cout << "Testing method \"" << method << "\"..." << std::endl;
-    musly_jukebox* box = musly_jukebox_poweron(method.c_str(), NULL);
+    musly_jukebox box = musly_jukebox_poweron(method.c_str(), NULL);
     musly_track* tracks[100];
     musly_trackid trackids[100];
     for (int i = 0; i < 100; i++) {
@@ -421,7 +421,7 @@ void test_method(std::string method) {
     FILE *tempfile = fopen(tempfn, "w+bTD");  // binary, temporary, delete-on-close
 #endif
     REQUIRE( "exported jukebox state", musly_jukebox_tostream(box, tempfile) > 0 );
-    musly_jukebox* box2;
+    musly_jukebox box2;
     rewind(tempfile);
     REQUIRE( "imported jukebox state", (box2 = musly_jukebox_fromstream(tempfile)));
     fclose(tempfile);
