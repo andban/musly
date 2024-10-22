@@ -14,15 +14,13 @@
 
 #include <vector>
 extern "C" {
-    #include "libresample/libresample.h"
+    #include <libresample.h>
 }
 
 namespace musly {
 
 class resampler {
 private:
-    int input_rate;
-    int output_rate;
     double resample_factor;
 
     void* libresample;

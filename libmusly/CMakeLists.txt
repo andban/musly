@@ -3,77 +3,94 @@
 
 # (c) 2013-2014, Dominik Schnitzer <dominik@schnitzer.at>
 #     2014-2016, Jan Schlueter <jan.schlueter@ofai.at>
+#
 
-add_subdirectory(
-    libresample)
+add_library(libmusly)
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external")
-    add_subdirectory(
-        external)
-    set_source_files_properties(${LIBMUSLY_EXTERNAL}
-        PROPERTIES COMPILE_FLAGS "${LIBMUSLY_EXTERNAL_FLAGS}")
-    set_source_files_properties(lib.cpp
-        PROPERTIES COMPILE_FLAGS "-DLIBMUSLY_EXTERNAL ${LIBMUSLY_EXTERNAL_FLAGS}")
-endif()
+target_sources(libmusly
+    PRIVATE
+        src/kissfft/kiss_fft.c
+        src/kissfft/kiss_fftr.c
+        src/methods/mandelellis.cpp
+        src/methods/timbre.cpp
+        src/resampler.cpp
+        src/plugins.cpp
+        src/method.cpp
+        src/decoder.cpp
+        src/windowfunction.cpp
+        src/powerspectrum.cpp
+        src/melspectrum.cpp
+        src/discretecosinetransform.cpp
+        src/mfcc.cpp
+        src/gaussianstatistics.cpp
+        src/mutualproximity.cpp
+        src/lib.cpp
+    PUBLIC FILE_SET HEADERS
+    BASE_DIRS include FILES
+        include/musly/musly.h
+        include/musly/musly_types.h
+)
 
-if(EXISTS "${LIBAV_INCLUDE_DIRS}/libavutil/channel_layout.h")
-    set_source_files_properties(decoders/libav.cpp
-        PROPERTIES COMPILE_FLAGS "-DHAVE_AVUTIL_CHANNEL_LAYOUT")
-endif()
-
-if(USE_OPENMP AND OPENMP_FOUND)
-    # disable OpenMP for kiss FFT, it slows things down terribly
-    set_source_files_properties(kissfft/kiss_fft.c
-        PROPERTIES COMPILE_FLAGS "-U_OPENMP")
-endif()
-
-include_directories(
-    ${LIBMUSLY_INCLUDE}
-    ${EIGEN3_INCLUDE_DIR}
-    ${LIBAV_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_SOURCE_DIR})
-
-add_library(libmusly
-    kissfft/kiss_fft.c
-    kissfft/kiss_fftr.c
-    methods/mandelellis.cpp
-    methods/timbre.cpp
-    decoders/libav.cpp
-    resampler.cpp
-    plugins.cpp
-    method.cpp
-    decoder.cpp
-    windowfunction.cpp
-    powerspectrum.cpp
-    melspectrum.cpp
-    discretecosinetransform.cpp
-    mfcc.cpp
-    gaussianstatistics.cpp
-    mutualproximity.cpp
-    lib.cpp
-    ${LIBMUSLY_EXTERNAL})
-target_compile_features(libmusly PUBLIC cxx_std_17)
-
-if(BUILD_STATIC)
-    set_target_properties(libmusly
-        PROPERTIES COMPILE_FLAGS "-DBUILD_STATIC")
-endif()
+target_link_libraries(libmusly 
+    musly_resample Eigen3::Eigen
+)
+target_include_directories(libmusly
+    PRIVATE src/ include/ Eigen3::Eigen musly_resample
+    INTERFACE $<INSTALL_INTERFACE:include>
+)
 
 # This defines MUSLY_BUILDING_LIBRARY *only when building as shared library*,
 # allowing us to use __declspec(dllexport) instead of dllimport on Windows.
-set_target_properties(libmusly
-    PROPERTIES DEFINE_SYMBOL MUSLY_BUILDING_LIBRARY)
+set_target_properties(libmusly PROPERTIES 
+    PREFIX ""
+    DEFINE_SYMBOL MUSLY_BUILDING_LIBRARY
+)
 
-target_link_libraries(libmusly
-    ${LIBMUSLY_LIBS}
-    ${LIBAV_LIBRARIES})
+target_compile_definitions(libmusly
+    PRIVATE -DMUSLY_VERSION="${CMAKE_PROJECT_VERSION}"
+)
+
+if(BUILD_STATIC)
+    target_compile_definitions(libmusly
+        PUBLIC -DBUILD_STATIC
+    )
+endif()
+
+if (LINUX)
+    find_package(LibAV 0.8 COMPONENTS avcodec avformat avutil REQUIRED)
+else()
+    find_package(LibAV 0.8 COMPONENTS avcodec avformat avutil)
+endif()
+
+if(LIBAV_FOUND)
+    target_sources(libmusly PRIVATE src/decoders/libav.cpp)
+    target_link_libraries(libmusly ${LIBAV_LIBRARIES})
+    target_include_directories(libmusly PRIVATE ${LIBAV_INCLUDE_DIRS})
+    target_compile_definitions(libmusly PRIVATE -DMUSLY_DECODER_LIBAV)
+
+    if(EXISTS "${LIBAV_INCLUDE_DIRS}/libavutil/channel_layout.h")
+        set_source_files_properties(decoders/libav.cpp PROPERTIES
+            COMPILE_FLAGS "-DHAVE_AVUTIL_CHANNEL_LAYOUT"
+        )
+    endif()
+endif()
+
+if(APPLE)
+    find_library(AUDIOTOOLBOX_LIBRARY AudioToolbox)
+    find_library(COREFOUNDATION_LIBRARY CoreFoundation)
+    mark_as_advanced(AUDIOTOOLBOX_LIBRARY COREFOUNDATION_LIBRARY)
+
+    target_sources(libmusly PRIVATE src/decoders/coreaudio.cpp)
+    target_link_libraries(libmusly ${ADDITIONAL_LIBRARIES} ${AUDIOTOOLBOX_LIBRARY} ${COREFOUNDATION_LIBRARY})
+    target_compile_definitions(libmusly PRIVATE -DMUSLY_DECODER_COREAUDIO)
+endif()
+
 if(WIN32 OR MINGW)
-    # link against winsock2 for ntohl() and htonl()
     target_link_libraries(libmusly ws2_32)
 endif()
 
-set_target_properties(libmusly
-    PROPERTIES PREFIX "")
-
-install(TARGETS libmusly
-    DESTINATION lib)
+install(TARGETS libmusly 
+    FILE_SET HEADERS
+    LIBRARY
+    ARCHIVE
+)

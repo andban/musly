@@ -100,7 +100,7 @@ minilog_get_timestr()
     char result[MAX_LEN*2] = {0};
     struct timeval tv;
     gettimeofday(&tv, 0);
-    sprintf(result, "%s.%03ld", buffer, (long)tv.tv_usec / 1000);
+    snprintf(result, MAX_LEN * 2, "%s.%03ld", buffer, (long)tv.tv_usec / 1000);
 
     return result;
 }

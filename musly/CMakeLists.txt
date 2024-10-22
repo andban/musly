@@ -4,19 +4,20 @@
 # (c) 2013, Dominik Schnitzer <dominik@schnitzer.at>
 
 include_directories(
-    ${EIGEN3_INCLUDE_DIR})
-
+    Eigen3::Eigen
+)
 
 add_executable(musly
     tools.cpp
     fileiterator.cpp
     programoptions.cpp
     collectionfile.cpp
-    main.cpp)
+    main.cpp
+)
 
 target_link_libraries(musly
-    libmusly)
-
-target_compile_features(musly PUBLIC cxx_std_17)
+    libmusly
+    Eigen3::Eigen
+)
 
 install(TARGETS musly DESTINATION bin)

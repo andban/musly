@@ -39,12 +39,21 @@ typedef unsigned char uint8_t;
 // plugins here instead ensures the plugins are present in static builds.
 
 #include "methods/mandelellis.h"
-#include "methods/timbre.h"
-#include "decoders/libav.h"
-
 MUSLY_METHOD_REGSTATIC(mandelellis, 0);
+
+#include "methods/timbre.h"
 MUSLY_METHOD_REGSTATIC(timbre, 1);
+
+#if MUSLY_DECODER_LIBAV
+#include "decoders/libav.h"
 MUSLY_DECODER_REGSTATIC(libav, 0);
+#endif // MUSLY_DECODER_LIBAV
+
+#if MUSLY_DECODER_COREAUDIO
+#include "decoders/coreaudio.h"
+MUSLY_DECODER_REGSTATIC(coreaudio, 1);
+#endif // MUSLY_DECODER_COREAUDIO
+
 
 #ifdef LIBMUSLY_EXTERNAL
 #include "external/register_static.h"
