@@ -47,7 +47,7 @@ set_target_properties(libmusly PROPERTIES
 )
 
 target_compile_definitions(libmusly
-    PRIVATE -DMUSLY_VERSION="${CMAKE_PROJECT_VERSION}"
+    PRIVATE -DMUSLY_VERSION="${PROJECT_VERSION}"
 )
 
 if(BUILD_STATIC)
