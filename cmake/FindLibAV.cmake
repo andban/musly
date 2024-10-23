@@ -68,7 +68,7 @@ FIND_PATH (LIBAV_INCLUDE_DIR
         libavutil/avutil.h
         libswscale/swscale.h
   HINTS ${LIBAV_ROOT_DIR}
-  PATH_SUFFIXES include
+  PATH_SUFFIXES include include/ffmpeg
   DOC "libav include directory")
 
 if (NOT LibAV_FIND_COMPONENTS)
