@@ -111,5 +111,4 @@ endif()
 install(TARGETS libmusly 
     FILE_SET HEADERS
     LIBRARY
-    ARCHIVE
 )

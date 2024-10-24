@@ -46,23 +46,36 @@ FetchContent_Declare(Eigen3
     EXCLUDE_FROM_ALL
     FIND_PACKAGE_ARGS NO_MODULE
 )
-FetchContent_MakeAvailable(Eigen3)
+
+# can be replaced with FetchContent_MakeAvailable(Eigen3), when CMake >= 3.28
+FetchContent_GetProperties(Eigen3)
+if(NOT eigen3_POPULATED)
+  FetchContent_Populate(Eigen3)
+  add_subdirectory(${eigen3_SOURCE_DIR} ${eigen3_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
 
 add_subdirectory(libresample)
 add_subdirectory(libmusly)
 
-if (NOT WIN32 AND NOT MINGW)
-    add_subdirectory(musly)
+# when the project is included as dependency from another
+# project, provide additional targets
+if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCEDIR)
+    if (NOT WIN32 AND NOT MINGW)
+        add_subdirectory(musly)
+    endif()
+
+    if (BUILD_TEST)
+        enable_testing()
+        add_subdirectory(test)
+    endif ()
+
+    # Documentation
+    set(musly_DOC_FILES AUTHORS COPYING README.md)
+    set(musly_DOC_PATH "share/doc/musly")
+    install(FILES ${musly_DOC_FILES}
+        DESTINATION ${musly_DOC_PATH})
+
 endif()
 
-if (BUILD_TEST)
-    enable_testing()
-    add_subdirectory(test)
-endif ()
-
-# Documentation
-set(musly_DOC_FILES AUTHORS COPYING README.md)
-set(musly_DOC_PATH "share/doc/musly")
-install(FILES ${musly_DOC_FILES}
-        DESTINATION ${musly_DOC_PATH})
 
