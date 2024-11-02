@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+include_dir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+
+Name: libmusly
+Description: A library for music similarity computation
+Version: @PROJECT_VERSION@
+Libs: -L${libdir} -lmusly
+Cflags: -I${include_dir}

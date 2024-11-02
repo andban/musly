@@ -47,6 +47,8 @@ endif ()
 
 option(BUILD_TEST "Build selftest executable" OFF)
 
+option(MUSLY_USE_OWN_LIBKISSFFT OFF)
+option(MUSLY_USE_OWN_LIBRESAMPLE OFF)
 
 #
 # Project Setup
@@ -83,8 +85,10 @@ check_ipo_supported(RESULT musly_IPO_SUPPORTED)
 # Dependencies
 #
 
-# make sure Eigen3 library is present
 include(FetchContent)
+
+# make sure Eigen3 library is present. Since it is header-only no need to insist on
+# using installed packages, but we'll take it when it is there.
 FetchContent_Declare(Eigen3
     URL      https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz
     URL_HASH SHA256=8586084f71f9bde545ee7fa6d00288b264a2b7ac3607b974e54d13e7162c1c72
@@ -92,18 +96,24 @@ FetchContent_Declare(Eigen3
     EXCLUDE_FROM_ALL
     FIND_PACKAGE_ARGS NO_MODULE
 )
-
 FetchContent_MakeAvailable(Eigen3)
 
-# can be replaced with FetchContent_MakeAvailable(Eigen3), when CMake >= 3.28
-#FetchContent_GetProperties(Eigen3)
-#if(NOT eigen3_POPULATED)
-#  FetchContent_Populate(Eigen3)
-#  add_subdirectory(${eigen3_SOURCE_DIR} ${eigen3_BINARY_DIR} EXCLUDE_FROM_ALL)
-#endif()
+if(NOT MUSLY_USE_OWN_LIBRESAMPLE)
+    find_package(LibResample REQUIRED)
+else()
+    message(STATUS "Using vendored version of libresample.")
+    add_subdirectory(libresample)
+endif()
 
-add_subdirectory(libkissfft)
-add_subdirectory(libresample)
+if(NOT MUSLY_USE_OWN_LIBKISSFFT)
+    find_package(kissfft REQUIRED)
+else()
+    message(STATUS "Using vendored version of kissfft.")
+    add_subdirectory(libkissfft)
+endif()
+
+find_package(LibAV 4.3 COMPONENTS avcodec avformat avutil)
+
 add_subdirectory(libmusly)
 
 if (NOT IS_SUBPROJECT)
@@ -125,7 +135,7 @@ if (NOT IS_SUBPROJECT)
 endif()
 
 #
-# Export Configuration
+# Install CMake Config Package
 #
 
 configure_package_config_file(
@@ -156,6 +166,20 @@ export(PACKAGE Musly)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MuslyConfig.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/MuslyConfigVersion.cmake
     DESTINATION ${musly_CMAKEPKG_INSTALL_DIR}
+)
+
+#
+# Install pkg-config configuration file
+#
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/libmusly.pc.in
+    ${CMAKE_CURRENT_BINARY_DIR}/libmusly.pc
+    @ONLY
+)
+install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/libmusly.pc
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
 )
 
 #

@@ -11,6 +11,7 @@ add_library(libresample STATIC
     src/resamplesubs.c
     src/resample.c
 )
+add_library(resample::resample ALIAS libresample)
 
 target_include_directories(libresample 
     PRIVATE 

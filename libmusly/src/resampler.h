@@ -14,7 +14,7 @@
 
 #include <vector>
 extern "C" {
-    #include "libresample.h"
+    #include <libresample.h>
 }
 
 namespace musly {
