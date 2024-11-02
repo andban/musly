@@ -99,13 +99,12 @@ target_sources(libmusly
 # add common link libraries
 target_link_libraries(libmusly
     PRIVATE
-        libkissfft
-        libresample
+        kissfft::kissfft-float
+        resample::resample
         Eigen3::Eigen
 )
 
 # enable libav decoder support when available
-find_package(LibAV 0.8 COMPONENTS avcodec avformat avutil)
 if(LIBAV_FOUND)
     target_sources(libmusly
         PRIVATE src/decoders/libav.cpp

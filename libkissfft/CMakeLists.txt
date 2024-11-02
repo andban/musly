@@ -8,6 +8,7 @@ add_library(libkissfft STATIC
     src/kiss_fft.c
     src/kiss_fftr.c
 )
+add_library(kissfft::kissfft-float ALIAS libkissfft)
 
 target_include_directories(libkissfft 
     PRIVATE 
