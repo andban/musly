@@ -16,3 +16,7 @@ build/
 
 # Optional external Musly Add-On Code
 libmusly/external
+
+# Other files
+.vscode/
+
