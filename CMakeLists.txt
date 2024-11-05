@@ -78,8 +78,9 @@ set(musly_CMAKEPKG_INSTALL_DIR
     "${CMAKE_INSTALL_DATADIR}/musly/cmake"
     CACHE PATH "The directory relative to CMAKE_INSTALL_PREFIX where the Musly CMake package files are installed.")
 
-check_ipo_supported(RESULT musly_IPO_SUPPORTED)
-
+if(NOT CMAKE_COMPILER_ID MATCHES "GNU")
+    check_ipo_supported(RESULT musly_IPO_SUPPORTED)
+endif()
 
 #
 # Dependencies
