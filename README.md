@@ -118,13 +118,19 @@ cd musly-master
 
 To compile Musly, it is good practice to create an empty directory to build in.
 This can be placed inside your Musly source tree. Assuming you are in the source
-tree, run the following commands to build and install Musly (**Note**: For
-Windows, add `-G"MSYS Makefiles"` to both of the `cmake` lines below):
+tree, run the following commands to build and install Musly:
 
 ```bash
 $ cmake -S . -B build
 $ cmake --build build 
 $ sudo cmake --install build
+```
+
+If you do not have packages for libresample or kissfft installed and/or do not want
+to use them, you can instruct musly to use its own copies of these libraries:
+
+```bash
+$ cmake -S . -B build -DMUSLY_USE_OWN_LIBRESAMPLE=TRUE -DMUSLY_USE_OWN_LIBKISSFFT=TRUE
 ```
 
 To perform a self-test of the library, optionally run (still inside `build`):
