@@ -11,6 +11,7 @@
 #include "resampler.h"
 
 #include <cstdlib>
+#include <cstdint>
 #include <algorithm>
 #include <windows.h>
 #include <mfapi.h>
