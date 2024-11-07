@@ -18,7 +18,7 @@
  *
  * \sa musly_jukebox_poweron(), musly_jukebox_poweroff()
  */
-typedef struct _musly_jukebox* musly_jukebox;
+typedef struct _musly_jukebox musly_jukebox;
 
 
 /** A musly_track object typically represents the features extracted with an

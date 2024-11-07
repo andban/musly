@@ -27,7 +27,7 @@
 #include "fileiterator.h"
 #include "collectionfile.h"
 
-musly_jukebox mj = 0;
+musly_jukebox* mj = 0;
 
 int read_collectionfile(
     collection_file &cf,
@@ -127,7 +127,7 @@ int read_collectionfile(
     return count;
 }
 
-bool read_jukebox(std::string &filename, musly_jukebox *jukebox, int *last_reinit)
+bool read_jukebox(std::string &filename, musly_jukebox **jukebox, int *last_reinit)
 {
     std::cout << "Reading jukebox file: " << filename << std::endl;
     if (FILE *f = fopen(filename.c_str(), "rb"))
@@ -143,7 +143,7 @@ bool read_jukebox(std::string &filename, musly_jukebox *jukebox, int *last_reini
     return false;
 }
 
-bool write_jukebox(std::string &filename, musly_jukebox jukebox, int last_reinit)
+bool write_jukebox(std::string &filename, musly_jukebox* jukebox, int last_reinit)
 {
     std::cout << "Writing jukebox file: " << filename << std::endl;
     if (FILE *f = fopen(filename.c_str(), "wb"))
@@ -398,7 +398,7 @@ struct similarity_comp
 
 std::vector<similarity_knn>
 compute_similarity(
-    musly_jukebox mj,
+    musly_jukebox* mj,
     int k,
     std::vector<int> &artists,
     musly_trackid seed,
@@ -842,7 +842,7 @@ int main(int argc, char *argv[])
         int last_reinit = 0;
         if (!jukebox_file.empty())
         {
-            musly_jukebox mj2 = NULL;
+            musly_jukebox* mj2 = NULL;
             if (!read_jukebox(jukebox_file, &mj2, &last_reinit))
             {
                 std::cout << "Reading failed.";
