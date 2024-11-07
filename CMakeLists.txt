@@ -79,8 +79,9 @@ set(musly_CMAKEPKG_INSTALL_DIR
     CACHE PATH "The directory relative to CMAKE_INSTALL_PREFIX where the Musly CMake package files are installed.")
 
 
-if(WIN32 AND CMAKE_COMPILER_ID MATCHES "GNU")
+if(WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   message(STATUS "Interprocedural optimizations turned off because WIN32 GCC is funky")
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATIONS OFF)
   set(musly_IPO_SUPPORTED NO)
 elseif(NOT DEFINED CMAKE_INTERPROCEDURAL_OPTIMIZATIONS OR CMAKE_INTERPROCEDURAL_OPTIMIZATIONS)
   check_ipo_supported(RESULT musly_IPO_SUPPORTED)
