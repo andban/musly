@@ -166,6 +166,18 @@ if(WIN32 OR MINGW)
     )
 endif()
 
+if(WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND NOT BUILD_STATIC)
+  # cmake-format: off
+  target_link_options(libmusly
+    PRIVATE
+        -static-libgcc
+        -static-libstdc++
+        -Wl,-Bstatic,--whole-archive
+        -lwinpthread
+        -Wl,--no-whole-archive
+  )
+  # cmake-format: on
+endif()
 
 install(TARGETS libmusly 
     EXPORT MuslyTargets
