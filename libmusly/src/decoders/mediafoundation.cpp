@@ -25,7 +25,7 @@ namespace {
 
 template<typename T> void releaseHandle(T **handle)
 {
-    if (handle)
+    if (*handle)
     {
         (*handle)->Release();
         *handle = nullptr;
