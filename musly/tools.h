@@ -38,6 +38,9 @@ split(
         char delim);
 
 std::string
+join(const std::vector<std::string>& v, char delim);
+
+std::string
 longest_common_prefix(
         const std::vector<std::string> &strs);
 

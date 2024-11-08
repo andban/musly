@@ -19,4 +19,11 @@ target_link_libraries(selftest
 
 add_test(NAME selftest 
     COMMAND selftest
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+if(MSVC)
+    set_target_properties(selftest PROPERTIES
+        VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+endif()

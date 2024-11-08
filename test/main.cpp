@@ -485,6 +485,21 @@ void test_method(std::string method) {
 }
 
 
+void test_decoder(const std::string& decoder)
+{
+    std::cout << "Testing decoder '" << decoder << "'..." << std::endl;
+
+    musly_jukebox* box = musly_jukebox_poweron("timbre", decoder.c_str());
+    REQUIRE("jukebox initialized with decoder", box != nullptr);
+
+    musly_track* track = musly_track_alloc(box);
+    REQUIRE("analyze file", musly_track_analyze_audiofile(box, "fixtures/sample-15s.mp3", 15, 0, track) == 0);
+
+    musly_track_free(track);
+
+    musly_jukebox_poweroff(box);
+}
+
 int main() {
     musly_debug(1);  // set verbosity level to logERROR
 
@@ -500,6 +515,19 @@ int main() {
     std::vector<std::string> methods = split(musly_jukebox_listmethods(), ',');
     for (int i = 0; i < (int)methods.size(); i++) {
         test_method(methods[i]);
+    }
+
+    std::vector<std::string> decoders = split(musly_jukebox_listdecoders(), ',');
+    std::vector<std::string> decoders_to_test;
+    std::copy_if(
+        decoders.begin(), decoders.end(), 
+        std::back_inserter(decoders_to_test), 
+        [](auto &decoder) { return decoder != "none"; }
+    );
+    
+    std::cout << "Decoders to test: " << join(decoders_to_test, ',');
+    for (auto decoder : decoders_to_test) {
+        test_decoder(decoder);
     }
 
     SUMMARY();

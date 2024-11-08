@@ -67,6 +67,18 @@ split(
     return elems;
 }
 
+std::string
+join(const std::vector<std::string>& v, char delim)
+{
+    std::string s;
+    for (auto iter = v.begin(); iter != v.end(); ++iter) {
+        if (iter != v.begin()) {
+            s += delim;
+        }
+        s += *iter;
+    }
+    return s;
+}
 
 std::vector<std::string>
 split(
