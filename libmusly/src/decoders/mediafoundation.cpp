@@ -138,7 +138,7 @@ public:
 
         bool had_error = false;
 
-        MINILOG(logINFO) << "frames to read: " << total_frames_to_read << " length " << duration;
+        MINILOG(logINFO) << "mediafoundation: frames to read: " << total_frames_to_read << " length " << duration;
 
         while (frames_read < total_frames_to_read)
         {
@@ -148,28 +148,26 @@ public:
             if (FAILED(res))
             {
                 MINILOG(logWARNING) << "mediafoundation: failed to read sample";
-                break;
             }
             
             if (flags & MF_SOURCE_READERF_ERROR)
             {
                 MINILOG(logERROR) << "mediafoundation: failed to read sample because of reader error";
-                break;
             }
             else if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
             {
                 MINILOG(logTRACE) << "mediafoundation: failed to read sample because EOF";
-                break;
             }
             else if (flags & MF_SOURCE_READERF_CURRENTMEDIATYPECHANGED)
             {
                 MINILOG(logERROR) << "mediafoundation: failed to read sample because format not supported by PCM format";
-                break;
             }
-            else if (sample == nullptr)
+            
+            if (sample == nullptr)
             {
-                MINILOG(logERROR) << "mediafoundation: failed to read sample because no data was returned?!";
-                continue;
+                MINILOG(logERROR) << "mediafoundation: failed to read sample because no data was returned";
+                had_error = true;
+                goto release_sample;
             }
 
             res = sample->ConvertToContiguousBuffer(&buffer);
