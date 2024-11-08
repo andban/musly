@@ -148,26 +148,33 @@ public:
             if (FAILED(res))
             {
                 MINILOG(logWARNING) << "mediafoundation: failed to read sample";
+                had_error = true;
+                goto release_sample;
+
             }
             
             if (flags & MF_SOURCE_READERF_ERROR)
             {
                 MINILOG(logERROR) << "mediafoundation: failed to read sample because of reader error";
+                had_error = true;
+                goto release_sample;
             }
             else if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
             {
                 MINILOG(logTRACE) << "mediafoundation: failed to read sample because EOF";
+                had_error = true;
             }
             else if (flags & MF_SOURCE_READERF_CURRENTMEDIATYPECHANGED)
             {
                 MINILOG(logERROR) << "mediafoundation: failed to read sample because format not supported by PCM format";
+                had_error = true;
+                goto release_sample;
             }
             
             if (sample == nullptr)
             {
                 MINILOG(logERROR) << "mediafoundation: failed to read sample because no data was returned";
-                had_error = true;
-                goto release_sample;
+                break;
             }
 
             res = sample->ConvertToContiguousBuffer(&buffer);
@@ -217,10 +224,10 @@ release_sample:
         size_t samples_read = frames_read * channels();
         const int sample_max = std::numeric_limits<int16_t>::max();
 
-        std::vector<float> result(frames_read * channels());
+        std::vector<float> result(samples_read);
         std::transform(
             short_samples.begin(), 
-            short_samples.end(), 
+            short_samples.begin() + samples_read, 
             result.begin(), 
             [=](int16_t sample) { return static_cast<float>(sample) / (float)sample_max; });
 
@@ -302,10 +309,10 @@ private:
 
         target_media_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
         target_media_type->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
-        //target_media_type->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, sample_rate);
-        //target_media_type->SetUINT32(MF_MT_FIXED_SIZE_SAMPLES, TRUE);
+        target_media_type->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, sample_rate);
+        target_media_type->SetUINT32(MF_MT_FIXED_SIZE_SAMPLES, TRUE);
         target_media_type->SetUINT32(MF_MT_SAMPLE_SIZE, sizeof(uint16_t));
-        //target_media_type->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, channels);
+        target_media_type->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, channels);
 
         res = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, target_media_type);
         releaseHandle(&target_media_type);
