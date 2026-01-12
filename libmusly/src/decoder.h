@@ -56,8 +56,19 @@ private: \
 #define MUSLY_DECODER_REGIMPL(classname, priority) \
     const plugin_creator_impl<classname> classname::creator(#classname, \
             plugins::DECODER_TYPE, priority);
+
+#define MUSLY_DECODER_REGIMPL_DYNAMIC(classname, priority, library_loader) \
+    class classname##_creator : public plugin_creator_impl<classname> { \
+    public: \
+        classname##_creator() : plugin_creator_impl<classname>(#classname, plugins::DECODER_TYPE, priority) {} \
+        bool is_available() override { \
+            return library_loader(); \
+        } \
+    }; \
+    static const classname##_creator creator;
 #else
 #define MUSLY_DECODER_REGIMPL(classname, priority)
+#define MUSLY_DECODER_REGIMPL_DYNAMIC(classname, priority, library_loader)
 #endif
 
 /** Alternative form for MUSLY_DECODER_REGIMPL to be used for static builds of

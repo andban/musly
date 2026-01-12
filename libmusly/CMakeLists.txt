@@ -107,10 +107,9 @@ target_link_libraries(libmusly
 # enable libav decoder support when available
 if(LIBAV_FOUND)
     target_sources(libmusly
-        PRIVATE src/decoders/libav.cpp
-    )
-    target_link_libraries(libmusly
-        PRIVATE ${LIBAV_LIBRARIES}
+        PRIVATE 
+            src/decoders/libav.cpp
+            src/decoders/libav_functions.cpp
     )
     target_include_directories(libmusly
         PRIVATE ${LIBAV_INCLUDE_DIRS}
@@ -118,6 +117,10 @@ if(LIBAV_FOUND)
     target_compile_definitions(libmusly 
         PRIVATE -DMUSLY_DECODER_LIBAV
     )
+
+    if(NOT WIN32)
+        target_link_libraries(libmusly PRIVATE ${CMAKE_DL_LIBS})
+    endif()
 
     if(EXISTS "${LIBAV_INCLUDE_DIRS}/libavutil/channel_layout.h")
         set_source_files_properties(decoders/libav.cpp PROPERTIES

@@ -13,11 +13,16 @@
 
 #include <vector>
 #include <algorithm>
+
+#include "libav_functions.h"
+
+#ifndef MUSLY_DECODER_LIBAV
 extern "C" {
     #include <libavcodec/avcodec.h>
     #include <libavformat/avformat.h>
     #include <libavutil/channel_layout.h>
 }
+#endif
 
 #include "minilog.h"
 #include "resampler.h"
@@ -27,7 +32,9 @@ extern "C" {
 namespace musly {
 namespace decoders {
 
-MUSLY_DECODER_REGIMPL(libav, 0);
+#ifdef MUSLY_DECODER_LIBAV
+MUSLY_DECODER_REGIMPL_DYNAMIC(libav, 0, libav_is_available);
+#endif
 
 libav::libav()
 {
