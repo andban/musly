@@ -10,46 +10,19 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#define __STDC_CONSTANT_MACROS
-#define __STDC_FORMAT_MACROS
 
-#include <inttypes.h>
-#include <stdint.h>
 #include <vector>
 #include <algorithm>
 extern "C" {
     #include <libavcodec/avcodec.h>
     #include <libavformat/avformat.h>
-#ifdef HAVE_AVUTIL_CHANNEL_LAYOUT
     #include <libavutil/channel_layout.h>
-#endif
 }
 
 #include "minilog.h"
 #include "resampler.h"
 #include "libav.h"
 
-// We define some macros to be compatible to different libav versions
-// without spreading #if and #else all over the place.
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55, 45, 101)
-#define AV_FRAME_ALLOC avcodec_alloc_frame
-#define AV_FRAME_UNREF avcodec_get_frame_defaults
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 28, 0)
-#define AV_FRAME_FREE(X) av_free(*(X))
-#else
-#define AV_FRAME_FREE avcodec_free_frame
-#endif
-#else
-#define AV_FRAME_ALLOC av_frame_alloc
-#define AV_FRAME_UNREF av_frame_unref
-#define AV_FRAME_FREE av_frame_free
-#endif
-
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57, 7, 0)
-#define AV_PACKET_UNREF av_free_packet
-#else
-#define AV_PACKET_UNREF av_packet_unref
-#endif
 
 namespace musly {
 namespace decoders {
@@ -58,12 +31,6 @@ MUSLY_DECODER_REGIMPL(libav, 0);
 
 libav::libav()
 {
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58, 9, 100)
-    av_register_all();
-#endif
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58, 9, 100)
-    avcodec_register_all();
-#endif
 }
 
 int
@@ -108,18 +75,7 @@ if (in_fmt == ifmt || in_fmt == ifmtp) {\
 void libav_log_callback(void *ptr, int level, const char *fmt, va_list vargs)
 {
     if (level <= av_log_get_level()) {
-#if __cplusplus > 199711L
-        int len = vsnprintf(NULL, 0, fmt, vargs);
-        // Note: len does not include the terminating '\0' character.
-        // We intentionally make the buffer one character too short
-        // to avoid including the end-of-line character of libav.
-        char *buf = new char[len];
-        vsnprintf(buf, len, fmt, vargs);
-        MINILOG(logTRACE) << "libav: " << buf;
-        delete[] buf;
-#else
         vfprintf(FileLogger::get_stream(), fmt, vargs);
-#endif
     }
 }
 
@@ -131,7 +87,7 @@ libav::decodeto_22050hz_mono_float(
 {
     MINILOG(logTRACE) << "Decoding: " << file << " started.";
 
-    const int target_rate = 22050;
+    constexpr int target_rate = 22050;
     int avret;
 
     // show libav messages only in verbose mode
@@ -144,20 +100,15 @@ libav::decodeto_22050hz_mono_float(
     }
 
     // guess input format
-    AVFormatContext* fmtx = NULL;
-    avret = avformat_open_input(&fmtx, file.c_str(), NULL, NULL);
+    AVFormatContext* fmtx = nullptr;
+    avret = avformat_open_input(&fmtx, file.c_str(), nullptr, nullptr);
     if (avret < 0) {
         MINILOG(logERROR) << "Could not open file, or detect file format";
         return std::vector<float>(0);
     }
 
     // retrieve stream information
-#ifdef _OPENMP
-    #pragma omp critical
-#endif
-    {
-    avret = avformat_find_stream_info(fmtx, NULL);
-    }
+    avret = avformat_find_stream_info(fmtx, nullptr);
     if (avret < 0) {
         MINILOG(logERROR) << "Could not find stream info";
 
@@ -167,7 +118,7 @@ libav::decodeto_22050hz_mono_float(
 
     // if there are multiple audio streams, find the best one..
     int audio_stream_idx =
-            av_find_best_stream(fmtx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
+            av_find_best_stream(fmtx, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0);
     if (audio_stream_idx < 0) {
         MINILOG(logERROR) << "Could not find audio stream in input file";
 
@@ -177,15 +128,8 @@ libav::decodeto_22050hz_mono_float(
     AVStream *st = fmtx->streams[audio_stream_idx];
 
     // find a decoder for the stream
-#if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57, 14, 0)) || ((LIBAVCODEC_VERSION_MICRO >= 100) && (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57, 33, 100)))
-    // old libav version (libavcodec < 57.14 for libav, < 57.33 for ffmpeg):
-    // stream has a codec context we can use
-    AVCodecContext *decx = st->codec;
-    #define AVCODEC_FREE_CONTEXT(x)
-#else
-    // new libav version: need to create codec context for stream
     AVCodecParameters *decp = st->codecpar;
-    AVCodecContext *decx = avcodec_alloc_context3(NULL);
+    AVCodecContext *decx = avcodec_alloc_context3(nullptr);
     if (!decx) {
         MINILOG(logERROR) << "Could not allocate codec context";
 
@@ -200,19 +144,12 @@ libav::decodeto_22050hz_mono_float(
         avformat_close_input(&fmtx);
         return std::vector<float>(0);
     }
-    #if LIBAVCODEC_VERSION_MICRO >= 100
-    #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,3,102)
-    // only available in ffmpeg, deprecated after 58
-    av_codec_set_pkt_timebase(decx, st->time_base);
-    #endif
-    #endif
-    #define AVCODEC_FREE_CONTEXT(x) avcodec_free_context(x)
-#endif
+
     const AVCodec *dec = avcodec_find_decoder(decx->codec_id);
     if (!dec) {
         MINILOG(logERROR) << "Could not find codec.";
 
-        AVCODEC_FREE_CONTEXT(&decx);
+        avcodec_free_context(&decx);
         avformat_close_input(&fmtx);
         return std::vector<float>(0);
     }
@@ -221,16 +158,12 @@ libav::decodeto_22050hz_mono_float(
     // (kindly ask for stereo downmix and floats, but not all decoders care)
     decx->request_channel_layout = AV_CH_LAYOUT_STEREO_DOWNMIX;
     decx->request_sample_fmt = AV_SAMPLE_FMT_FLT;
-#ifdef _OPENMP
-    #pragma omp critical
-#endif
-    {
-    avret = avcodec_open2(decx, dec, NULL);
-    }
+
+    avret = avcodec_open2(decx, dec, nullptr);
     if (avret < 0) {
         MINILOG(logERROR) << "Could not open codec.";
 
-        AVCODEC_FREE_CONTEXT(&decx);
+        avcodec_free_context(&decx);
         avformat_close_input(&fmtx);
         return std::vector<float>(0);
     }
@@ -240,32 +173,37 @@ libav::decodeto_22050hz_mono_float(
         MINILOG(logWARNING) << "Unsupported number of channels: "
                 << decx->channels;
 
-        AVCODEC_FREE_CONTEXT(&decx);
+        avcodec_free_context(&decx);
         avformat_close_input(&fmtx);
         return std::vector<float>(0);
     }
 
     // allocate a frame
-    AVFrame* frame = AV_FRAME_ALLOC();
+    AVFrame* frame = av_frame_alloc();
     if (!frame) {
         MINILOG(logWARNING) << "Could not allocate frame";
 
-        AVCODEC_FREE_CONTEXT(&decx);
+        avcodec_free_context(&decx);
         avformat_close_input(&fmtx);
         return std::vector<float>(0);
     }
 
     // allocate and initialize a packet
-    AVPacket pkt;
-    av_init_packet(&pkt);
-    pkt.data = NULL;
-    pkt.size = 0;
+    AVPacket* pkt = av_packet_alloc();
+    if (!pkt) {
+        MINILOG(logWARNING) << "Could not allocate packet";
+        avcodec_free_context(&decx);
+        avformat_close_input(&fmtx);
+        return std::vector<float>(0);
+    }
+    pkt->data = nullptr;
+    pkt->size = 0;
     int got_frame = 0;
 
     // configuration
     const int input_stride = av_get_bytes_per_sample(decx->sample_fmt);
     const int num_planes = av_sample_fmt_is_planar(decx->sample_fmt) ? decx->channels : 1;
-    const int output_stride = sizeof(float) * num_planes;
+    const size_t output_stride = sizeof(float) * num_planes;
     int decode_samples;  // how many samples to decode; zero to decode all
 
     if (st->duration) {  // if the file length is (at least approximately) known:
@@ -335,44 +273,38 @@ libav::decodeto_22050hz_mono_float(
     // read packets
     const int channels = decx->channels;
     const int sample_rate = decx->sample_rate;
-    float* buffer = NULL;
+    float* buffer = nullptr;
     int buffersize = 0;
     std::vector<float> decoded_pcm;
     int subsequent_errors = 0;
-    const int subsequent_errors_max = 20;
+    constexpr int subsequent_errors_max = 20;
     while ((decode_samples == 0) || ((int)decoded_pcm.size() < decode_samples))
     {
         // skip all frames that are not part of the audio stream, and spurious
         // frames possibly found after seeking (wrong channels / sample_rate)
-        while (((avret = av_read_frame(fmtx, &pkt)) >= 0)
-               && ((pkt.stream_index != audio_stream_idx) ||
+        while (((avret = av_read_frame(fmtx, pkt)) >= 0)
+               && ((pkt->stream_index != audio_stream_idx) ||
                    (decx->channels != channels) ||
                    (decx->sample_rate != sample_rate)))
         {
-            AV_PACKET_UNREF(&pkt);
+            av_packet_unref(pkt);
             MINILOG(logTRACE) << "Skipping frame...";
         }
         if (avret < 0) {
             // stop decoding if av_read_frame() failed
-            AV_PACKET_UNREF(&pkt);
+            av_packet_unref(pkt);
             break;
         }
 
-        uint8_t* data = pkt.data;
-        int size = pkt.size;
-        while (pkt.size > 0) {
+        uint8_t* data = pkt->data;
+        const int size = pkt->size;
+        while (pkt->size > 0) {
 
             // try to decode a frame
-            AV_FRAME_UNREF(frame);
+            av_frame_unref(frame);
 
             int len = 0;
             got_frame = 0;
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(57, 48, 101)
-            len = avcodec_decode_audio4(decx, frame, &got_frame, &pkt);
-            if (len < 0) {
-                avret = AVERROR(EINVAL);
-            }
-#else
             avret = avcodec_receive_frame(decx, frame);
             if (avret == 0) {
                 got_frame = 1;
@@ -381,14 +313,13 @@ libav::decodeto_22050hz_mono_float(
                 avret = 0;
             }
             if (avret == 0) {
-                avret = avcodec_send_packet(decx, &pkt);
+                avret = avcodec_send_packet(decx, pkt);
                 if (avret == 0) {
-                    len = pkt.size;
+                    len = pkt->size;
                 } else if (avret == AVERROR(EAGAIN)) {
                     avret = 0;
                 }
             }
-#endif
             if (avret < 0) {
                 MINILOG(logWARNING) << "Error decoding an audio frame";
 
@@ -400,8 +331,8 @@ libav::decodeto_22050hz_mono_float(
 
                 // if too many frames failed decoding, abort
                 MINILOG(logERROR) << "Too many errors, aborting.";
-                AV_FRAME_FREE(&frame);
-                AV_PACKET_UNREF(&pkt);
+                av_frame_free(&frame);
+                av_packet_unref(pkt);
                 avformat_close_input(&fmtx);
                 if (buffer) {
                     delete[] buffer;
@@ -434,8 +365,8 @@ libav::decodeto_22050hz_mono_float(
                             input_samples / num_planes) < 0) {
                         MINILOG(logERROR) << "Strange sample format. Abort.";
 
-                        AV_FRAME_FREE(&frame);
-                        AV_PACKET_UNREF(&pkt);
+                        av_frame_free(&frame);
+                        av_packet_unref(pkt);
                         avformat_close_input(&fmtx);
                         if (buffer) {
                             delete[] buffer;
@@ -457,15 +388,16 @@ libav::decodeto_22050hz_mono_float(
             }
 
             // consume the packet
-            pkt.data += len;
-            pkt.size -= len;
+            pkt->data += len;
+            pkt->size -= len;
         }
-        pkt.data = data;
-        pkt.size = size;
+        pkt->data = data;
+        pkt->size = size;
 
-        AV_PACKET_UNREF(&pkt);
+        av_packet_unref(pkt);
     }
     MINILOG(logTRACE) << "Decoding loop finished.";
+    av_packet_free(&pkt);
 
     // cut out the requested excerpt if needed
     int skip_samples = 0;
@@ -511,18 +443,12 @@ libav::decodeto_22050hz_mono_float(
     }
 
     // cleanup
-    if (buffer) {
-        delete[] buffer;
-    }
-    AV_FRAME_FREE(&frame);
-#ifdef _OPENMP
-    #pragma omp critical
-#endif
-    {
+    delete[] buffer;
+
+    av_frame_free(&frame);
     avcodec_close(decx);
-    AVCODEC_FREE_CONTEXT(&decx);
+    avcodec_free_context(&decx);
     avformat_close_input(&fmtx);
-    }
 
     MINILOG(logTRACE) << "Decoding: " << file << " finalized.";
     return pcm;
