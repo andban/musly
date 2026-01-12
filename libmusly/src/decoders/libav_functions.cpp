@@ -59,14 +59,21 @@ void (*ptr_avformat_close_input)(AVFormatContext **s) = nullptr;
 void (*ptr_av_packet_free)(AVPacket **pkt) = nullptr;
 int (*ptr_avcodec_close)(AVCodecContext *avctx) = nullptr;
 void (*ptr_avcodec_free_context)(AVCodecContext **avctx) = nullptr;
+int64_t (*ptr_av_get_default_channel_layout)(int nb_channels) = nullptr;
+struct SwrContext *(*ptr_swr_alloc_set_opts)(struct SwrContext *s, int64_t out_ch_layout, enum AVSampleFormat out_sample_fmt, int out_sample_rate, int64_t in_ch_layout, enum AVSampleFormat in_sample_fmt, int in_sample_rate, int log_offset, void *log_ctx) = nullptr;
+int (*ptr_swr_init)(struct SwrContext *s) = nullptr;
+void (*ptr_swr_free)(struct SwrContext **s) = nullptr;
+int (*ptr_swr_convert)(struct SwrContext *s, uint8_t **out, int out_count, const uint8_t **in, int in_count) = nullptr;
 
 static void* handle_avutil = nullptr;
 static void* handle_avcodec = nullptr;
 static void* handle_avformat = nullptr;
+static void* handle_swresample = nullptr;
 
-static const int supported_avutil_versions[] = { 56, 57, 58 };
-static const int supported_avcodec_versions[] = { 58, 59, 60 };
-static const int supported_avformat_versions[] = { 58, 59, 60 };
+static const int supported_avutil_versions[] = { 56, 57, 58, 0 };
+static const int supported_avcodec_versions[] = { 58, 59, 60, 0 };
+static const int supported_avformat_versions[] = { 58, 59, 60, 0 };
+static const int supported_swresample_versions[] = { 3, 4, 0 };
 
 static std::vector<std::string>
 get_library_names(const char* libname, const int versions[])
@@ -117,9 +124,10 @@ static bool load_libav() {
 
         handle_avutil = load_library("avutil", supported_avutil_versions);
         handle_avcodec = load_library("avcodec", supported_avcodec_versions);
-        handle_avformat = load_library("avformat", supported_avcodec_versions);
+        handle_avformat = load_library("avformat", supported_avformat_versions);
+        handle_swresample = load_library("swresample", supported_swresample_versions);
 
-        if (!handle_avutil || !handle_avcodec || !handle_avformat) return;
+        if (!handle_avutil || !handle_avcodec || !handle_avformat || !handle_swresample) return;
 
         BIND(handle_avutil, av_log_get_level);
         BIND(handle_avutil, av_log_set_level);
@@ -129,6 +137,7 @@ static bool load_libav() {
         BIND(handle_avutil, av_frame_alloc);
         BIND(handle_avutil, av_frame_unref);
         BIND(handle_avutil, av_frame_free);
+        BIND(handle_avutil, av_get_default_channel_layout);
 
         BIND(handle_avcodec, avcodec_alloc_context3);
         BIND(handle_avcodec, avcodec_parameters_to_context);
@@ -149,6 +158,11 @@ static bool load_libav() {
         BIND(handle_avformat, av_seek_frame);
         BIND(handle_avformat, av_read_frame);
         BIND(handle_avformat, avformat_close_input);
+
+        BIND(handle_swresample, swr_alloc_set_opts);
+        BIND(handle_swresample, swr_init);
+        BIND(handle_swresample, swr_free);
+        BIND(handle_swresample, swr_convert);
 
         success = true;
     });

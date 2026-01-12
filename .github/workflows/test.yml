@@ -24,7 +24,7 @@ jobs:
       - name: Prepare Linux
         if: ${{ matrix.platform == 'ubuntu-latest' }}
         run: |
-          sudo apt install -y --no-install-recommends libavcodec-dev libavformat-dev libavutil-dev libeigen3-dev
+          sudo apt install -y --no-install-recommends libavcodec-dev libavformat-dev libavutil-dev libswresample-dev libeigen3-dev
 
       - name: Prepare MacOS
         if: ${{ matrix.platform == 'macos-latest' }}

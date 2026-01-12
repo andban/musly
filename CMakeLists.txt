@@ -119,7 +119,7 @@ else()
     add_subdirectory(libkissfft)
 endif()
 
-find_package(LibAV 4.4 COMPONENTS avcodec avformat avutil)
+find_package(LibAV 4.4 COMPONENTS avcodec avformat avutil swresample)
 
 add_subdirectory(libmusly)
 

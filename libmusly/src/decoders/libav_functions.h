@@ -18,6 +18,7 @@ extern "C" {
     #include <libavutil/samplefmt.h>
     #include <libavutil/frame.h>
     #include <libavutil/log.h>
+    #include <libswresample/swresample.h>
 }
 
 namespace musly {
@@ -51,6 +52,11 @@ extern void (*ptr_avformat_close_input)(AVFormatContext **s);
 extern void (*ptr_av_packet_free)(AVPacket **pkt);
 extern int (*ptr_avcodec_close)(AVCodecContext *avctx);
 extern void (*ptr_avcodec_free_context)(AVCodecContext **avctx);
+extern int64_t (*ptr_av_get_default_channel_layout)(int nb_channels);
+extern struct SwrContext *(*ptr_swr_alloc_set_opts)(struct SwrContext *s, int64_t out_ch_layout, enum AVSampleFormat out_sample_fmt, int out_sample_rate, int64_t in_ch_layout, enum AVSampleFormat in_sample_fmt, int in_sample_rate, int log_offset, void *log_ctx);
+extern int (*ptr_swr_init)(struct SwrContext *s);
+extern void (*ptr_swr_free)(struct SwrContext **s);
+extern int (*ptr_swr_convert)(struct SwrContext *s, uint8_t **out, int out_count, const uint8_t **in, int in_count);
 
 // Macros to replace original function names with pointers
 #define av_log_get_level ptr_av_log_get_level
@@ -79,6 +85,11 @@ extern void (*ptr_avcodec_free_context)(AVCodecContext **avctx);
 #define av_packet_free ptr_av_packet_free
 #define avcodec_close ptr_avcodec_close
 #define avcodec_free_context ptr_avcodec_free_context
+#define av_get_default_channel_layout ptr_av_get_default_channel_layout
+#define swr_alloc_set_opts ptr_swr_alloc_set_opts
+#define swr_init ptr_swr_init
+#define swr_free ptr_swr_free
+#define swr_convert ptr_swr_convert
 
 } // namespace decoders
 } // namespace musly
