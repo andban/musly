@@ -89,6 +89,7 @@ target_sources(
             src/mfcc.cpp
             src/gaussianstatistics.cpp
             src/mutualproximity.cpp
+            src/decoders/wav_writer.cpp
             src/lib.cpp
     PUBLIC FILE_SET
            HEADERS
