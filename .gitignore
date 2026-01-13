@@ -20,4 +20,6 @@ libmusly/external
 
 # Other files
 .vscode/
+.idea/
 .direnv/
+.envrc
