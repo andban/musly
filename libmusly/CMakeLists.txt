@@ -110,7 +110,8 @@ target_link_libraries(
 if(LIBAV_FOUND)
     target_sources(
         libmusly
-        PRIVATE src/decoders/libav.cpp src/decoders/libav_file.cpp
+        PRIVATE src/decoders/libav.cpp
+                src/decoders/libav_file.cpp
                 src/decoders/libav_functions.cpp
     )
     target_include_directories(
@@ -169,6 +170,7 @@ if(WIN32
     target_sources(
         libmusly
         PRIVATE src/decoders/mediafoundation.cpp
+                src/decoders/mediafoundation_file.cpp
     )
     target_link_libraries(
         libmusly
