@@ -7,7 +7,6 @@
  */
 
 #include "coreaudio.h"
-#include "resampler.h"
 #include "minilog.h"
 #include "coreaudio_file.h"
 

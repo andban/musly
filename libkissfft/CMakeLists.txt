@@ -20,7 +20,7 @@ target_include_directories(libkissfft
 )
 
 set_target_properties(libkissfft PROPERTIES
-    # do not add a 'lib' prefix to the target name a.k.a. liblibresample.a
+    # do not add a 'lib' prefix to the target name a.k.a. liblibkissfft.a
     PREFIX ""
     # always ouput position independent code
     POSITION_INDEPENDENT_CODE ON

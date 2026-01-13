@@ -78,7 +78,6 @@ target_sources(
     PRIVATE src/decoders/none.cpp
             src/methods/mandelellis.cpp
             src/methods/timbre.cpp
-            src/resampler.cpp
             src/plugins.cpp
             src/method.cpp
             src/decoder.cpp
@@ -103,7 +102,7 @@ target_sources(
 # add common link libraries
 target_link_libraries(
     libmusly
-    PRIVATE kissfft::kissfft-float resample::resample Eigen3::Eigen
+    PRIVATE kissfft::kissfft-float Eigen3::Eigen
 )
 
 # enable libav decoder support when available

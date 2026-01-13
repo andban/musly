@@ -48,7 +48,6 @@ endif ()
 option(BUILD_TEST "Build selftest executable" OFF)
 
 option(MUSLY_USE_OWN_LIBKISSFFT OFF)
-option(MUSLY_USE_OWN_LIBRESAMPLE OFF)
 
 #
 # Project Setup
@@ -104,13 +103,6 @@ FetchContent_Declare(Eigen3
     FIND_PACKAGE_ARGS NO_MODULE
 )
 FetchContent_MakeAvailable(Eigen3)
-
-if(NOT MUSLY_USE_OWN_LIBRESAMPLE)
-    find_package(LibResample REQUIRED)
-else()
-    message(STATUS "Using vendored version of libresample.")
-    add_subdirectory(libresample)
-endif()
 
 if(NOT MUSLY_USE_OWN_LIBKISSFFT)
     find_package(kissfft REQUIRED)

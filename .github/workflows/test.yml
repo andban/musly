@@ -41,7 +41,7 @@ jobs:
       - name: Build project
         shell: bash
         run: |
-          cmake -S . -B build -DMUSLY_USE_OWN_LIBRESAMPLE=TRUE -DMUSLY_USE_OWN_LIBKISSFFT=TRUE -DBUILD_TEST=ON
+          cmake -S . -B build -DMUSLY_USE_OWN_LIBKISSFFT=TRUE -DBUILD_TEST=ON
           cmake --build build --config Release
 
       - name: Run tests

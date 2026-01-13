@@ -22,7 +22,6 @@ extern "C" {
 }
 
 #include "minilog.h"
-#include "resampler.h"
 #include "libav.h"
 
 
