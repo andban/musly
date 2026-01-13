@@ -13,10 +13,13 @@
 #ifndef MUSLY_DECODER_H_
 #define MUSLY_DECODER_H_
 
+#include "plugins.h"
+
 #include <minilog.h>
 #include <string>
 #include <vector>
-#include "plugins.h"
+#include <memory>
+#include <cstdint>
 
 namespace musly {
 
