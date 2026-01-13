@@ -1,6 +1,7 @@
 #ifndef MUSLY_DECODERS_LIBAV_FILE_H
 #define MUSLY_DECODERS_LIBAV_FILE_H
 
+#include <decoder.h>
 #include <string>
 
 typedef struct AVFormatContext AVFormatContext;
@@ -11,7 +12,7 @@ typedef struct SwrContext SwrContext;
 
 namespace musly::decoders
 {
-class libav_file
+class libav_file : public decoder_file
 {
 public:
     libav_file(const std::string& filename);
@@ -19,25 +20,18 @@ public:
     ~libav_file();
 
     bool
-    open();
+    open() override;
 
     float
-    duration() const { return _duration; }
-
-    static int
-    sample_rate() { return 22050; }
-
-    static int
-    channels() { return 1; }
+    duration() const override { return _duration; }
 
     bool
-    seek(float seconds);
+    seek(float seconds) override;
 
-    size_t
-    read(size_t samples, float* buffer);
+    int64_t
+    read(size_t samples, float* buffer) override;
 
 private:
-    std::string _filename;
     AVCodecContext* _context = nullptr;
     AVFormatContext* _format_context = nullptr;
     AVPacket* _pkt = nullptr;

@@ -32,6 +32,7 @@ MUSLY_DECODER_REGIMPL_DYNAMIC(libav, 0, libav_is_available);
 
 libav::libav()
 {
+    MINILOG(logTRACE) << "libav: Created LibAV decoder.";
 }
 
 void
@@ -43,14 +44,9 @@ libav_log_callback(void* ptr, int level, const char* fmt, va_list vargs)
     }
 }
 
-std::vector<float>
-libav::decodeto_22050hz_mono_float(
-    const std::string& file,
-    float excerpt_length,
-    float excerpt_start)
+std::unique_ptr<decoder_file>
+libav::open_file(const std::string& filename)
 {
-    MINILOG(logTRACE) << "Decoding: " << file << " started.";
-
     // show libav messages only in verbose mode
     if (MiniLog::current_level() >= logTRACE)
     {
@@ -62,44 +58,8 @@ libav::decodeto_22050hz_mono_float(
         av_log_set_level(AV_LOG_PANIC);
     }
 
-    libav_file audio_file(file);
-    if (!audio_file.open())
-    {
-        MINILOG(logERROR) << "Could not open file: " << file;
-        return std::vector<float>(0);
-    }
+    return std::make_unique<libav_file>(filename);
 
-    MINILOG(logDEBUG) << "libav: Audio file duration : " << audio_file.duration() << " seconds";
-
-    if (excerpt_length <= 0 || excerpt_length > audio_file.duration())
-    {
-        excerpt_start = 0;
-        excerpt_length = audio_file.duration();
-    }
-    else if (excerpt_start < 0)
-    {
-        excerpt_start = std::min(-excerpt_start, (audio_file.duration() - excerpt_length) / 2);
-    }
-    else if (excerpt_length + excerpt_start > audio_file.duration())
-    {
-        excerpt_start = std::max(0.0f, audio_file.duration() - excerpt_length);
-        excerpt_length = std::min(audio_file.duration(), audio_file.duration() - excerpt_start);
-    }
-
-    MINILOG(logDEBUG) << "libav: Will decode from " << excerpt_start << " to " << (excerpt_start + excerpt_length);
-    audio_file.seek(excerpt_start);
-
-    size_t samples_to_read = excerpt_length * audio_file.sample_rate();
-    std::vector<float> pcm(samples_to_read);
-
-    size_t samples_read = audio_file.read(samples_to_read, pcm.data());
-    if (samples_read < samples_to_read)
-    {
-        pcm.resize(samples_read);
-    }
-
-    MINILOG(logTRACE) << "Decoding: " << file << " finalized.";
-    return pcm;
 }
 } /* namespace musly::decoders */
 

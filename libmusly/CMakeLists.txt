@@ -149,7 +149,7 @@ if(APPLE)
 
     target_sources(
         libmusly
-        PRIVATE src/decoders/coreaudio.cpp
+        PRIVATE src/decoders/coreaudio.cpp src/decoders/coreaudio_file.cpp
     )
     target_link_libraries(
         libmusly

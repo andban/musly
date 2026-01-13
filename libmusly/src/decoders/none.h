@@ -20,8 +20,8 @@ class none : public musly::decoder
 public:
     none();
 
-    virtual std::vector<float>
-    decodeto_22050hz_mono_float(const std::string& file, float excerpt_length, float excerpt_start);
+private:
+    std::unique_ptr<decoder_file> open_file(const std::string& filename) override;
 };
 
 }} // namespace musly::decoders

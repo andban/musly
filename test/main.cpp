@@ -520,12 +520,12 @@ int main() {
     std::vector<std::string> decoders = split(musly_jukebox_listdecoders(), ',');
     std::vector<std::string> decoders_to_test;
     std::copy_if(
-        decoders.begin(), decoders.end(), 
-        std::back_inserter(decoders_to_test), 
+        decoders.begin(), decoders.end(),
+        std::back_inserter(decoders_to_test),
         [](auto &decoder) { return decoder != "none"; }
     );
-    
-    std::cout << "Decoders to test: " << join(decoders_to_test, ',');
+
+    std::cout << "Decoders to test: " << join(decoders_to_test, ',') << std::endl;
     for (auto decoder : decoders_to_test) {
         test_decoder(decoder);
     }

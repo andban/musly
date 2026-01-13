@@ -15,13 +15,13 @@ MUSLY_DECODER_REGIMPL(none, 0);
 
 none::none()
 {
+    MINILOG(logTRACE) << "none: Created 'none' decoder.";
 }
 
-std::vector<float>
-none::decodeto_22050hz_mono_float(const std::string&, float, float)
+std::unique_ptr<decoder_file>
+none::open_file(const std::string&)
 {
-    MINILOG(logWARNING) << "attempting to decode audio file using 'none' decoder. use musly_jukebox_analyze_pcm() directly.";
-    return std::vector<float>(0);
+    return nullptr;
 }
 
 }} // namespace musly::decoders

@@ -13,15 +13,15 @@
 
 namespace musly { namespace decoders {
 
-class coreaudio : public musly::decoder
+class coreaudio : public decoder
 {
     MUSLY_DECODER_REGCLASS(coreaudio);
 
 public:
     coreaudio();
 
-    virtual std::vector<float>
-    decodeto_22050hz_mono_float(const std::string& file, float excerpt_length, float excerpt_start);
+private:
+    std::unique_ptr<decoder_file> open_file(const std::string& filename) override;
 };
 
 }} // namespace musly::decoders

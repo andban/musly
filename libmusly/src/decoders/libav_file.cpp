@@ -10,7 +10,7 @@ extern "C" {
 
 namespace musly::decoders
 {
-libav_file::libav_file(const std::string& filename) : _filename(filename)
+libav_file::libav_file(const std::string& filename) : decoder_file(filename)
 {
 }
 
@@ -109,7 +109,7 @@ libav_file::seek(float seconds)
     return true;
 }
 
-size_t
+int64_t
 libav_file::read(size_t samples, float* buffer)
 {
     size_t samples_read = 0;
