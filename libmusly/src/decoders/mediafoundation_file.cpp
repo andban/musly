@@ -119,10 +119,10 @@ mediafoundation_file::open()
 
     target_media_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
     target_media_type->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
-    target_media_type->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, 22050);
+    target_media_type->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, TARGET_SAMPLE_RATE);
     target_media_type->SetUINT32(MF_MT_FIXED_SIZE_SAMPLES, TRUE);
     target_media_type->SetUINT32(MF_MT_SAMPLE_SIZE, sizeof(uint16_t));
-    target_media_type->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, 1);
+    target_media_type->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS,TARGET_CHANNELS);
     target_media_type->SetUINT32(MF_MT_AUDIO_CHANNEL_MASK, SPEAKER_FRONT_CENTER);
     
     res = _reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, target_media_type);

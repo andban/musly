@@ -83,7 +83,7 @@ libav_file::open()
     _pkt = av_packet_alloc();
 
     _swr = swr_alloc_set_opts(nullptr,
-                              AV_CH_LAYOUT_MONO, AV_SAMPLE_FMT_FLT, 22050,
+                              AV_CH_LAYOUT_MONO, AV_SAMPLE_FMT_FLT, TARGET_SAMPLE_RATE,
                               av_get_default_channel_layout(_context->channels), _context->sample_fmt,
                               _context->sample_rate,
                               0, nullptr);

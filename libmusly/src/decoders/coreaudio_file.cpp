@@ -66,13 +66,13 @@ coreaudio_file::open()
     }
 
     AudioStreamBasicDescription output_format = {0};
-    output_format.mSampleRate = 22050;
+    output_format.mSampleRate = TARGET_SAMPLE_RATE;
     output_format.mFormatID = kAudioFormatLinearPCM;
     output_format.mFormatFlags = kAudioFormatFlagIsFloat | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked;
-    output_format.mChannelsPerFrame = 1;
+    output_format.mChannelsPerFrame = TARGET_CHANNELS;
     output_format.mBytesPerFrame = sizeof(float);
     output_format.mBitsPerChannel = output_format.mBytesPerFrame * 8;
-    output_format.mFramesPerPacket = 1;
+    output_format.mFramesPerPacket = TARGET_CHANNELS;
     output_format.mBytesPerPacket = output_format.mBytesPerFrame * output_format.mFramesPerPacket;
 
     parameter_size = sizeof(output_format);
@@ -109,7 +109,7 @@ coreaudio_file::open()
 bool
 coreaudio_file::seek(float position)
 {
-    SInt64 start = (position * 22050) + _offset;
+    SInt64 start = static_cast<SInt64>(position * TARGET_SAMPLE_RATE) + _offset;
     if (ExtAudioFileSeek(_audio_file, start) != noErr)
     {
         MINILOG(logERROR) << "coreaudio: failed to seek in audio file";
@@ -136,7 +136,7 @@ coreaudio_file::read(size_t samples, float* target)
 
         AudioBufferList buffer_list;
         buffer_list.mNumberBuffers = 1;
-        buffer_list.mBuffers[0].mNumberChannels = 1;
+        buffer_list.mBuffers[0].mNumberChannels = TARGET_CHANNELS;
         buffer_list.mBuffers[0].mDataByteSize = frames_to_read * sizeof(float);
         buffer_list.mBuffers[0].mData = (void*)(&buffer[frames_read]);
 

@@ -37,6 +37,9 @@ public:
 
 protected:
     const std::string _filename;
+
+    static constexpr int TARGET_SAMPLE_RATE = 22050;
+    static constexpr int TARGET_CHANNELS = 1;
 };
 
 class decoder :

@@ -33,20 +33,20 @@
 namespace musly {
 namespace decoders {
 
-int (*ptr_av_log_get_level)(void) = nullptr;
+int (*ptr_av_log_get_level)() = nullptr;
 void (*ptr_av_log_set_level)(int level) = nullptr;
 void (*ptr_av_log_set_callback)(void (*callback)(void*, int, const char*, va_list)) = nullptr;
 int (*ptr_avformat_open_input)(AVFormatContext **ps, const char *url, const AVInputFormat *fmt, AVDictionary **options) = nullptr;
 int (*ptr_avformat_find_stream_info)(AVFormatContext *ic, AVDictionary **options) = nullptr;
-int (*ptr_av_find_best_stream)(AVFormatContext *ic, enum AVMediaType type, int wanted_stream_nb, int related_stream, const AVCodec **decoder_ret, int flags) = nullptr;
+int (*ptr_av_find_best_stream)(AVFormatContext *ic, AVMediaType type, int wanted_stream_nb, int related_stream, const AVCodec **decoder_ret, int flags) = nullptr;
 AVCodecContext *(*ptr_avcodec_alloc_context3)(const AVCodec *codec) = nullptr;
 int (*ptr_avcodec_parameters_to_context)(AVCodecContext *codec, const AVCodecParameters *par) = nullptr;
-const AVCodec *(*ptr_avcodec_find_decoder)(enum AVCodecID id) = nullptr;
+const AVCodec *(*ptr_avcodec_find_decoder)(AVCodecID id) = nullptr;
 int (*ptr_avcodec_open2)(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **options) = nullptr;
-AVFrame *(*ptr_av_frame_alloc)(void) = nullptr;
-AVPacket *(*ptr_av_packet_alloc)(void) = nullptr;
-int (*ptr_av_get_bytes_per_sample)(enum AVSampleFormat sample_fmt) = nullptr;
-int (*ptr_av_sample_fmt_is_planar)(enum AVSampleFormat sample_fmt) = nullptr;
+AVFrame *(*ptr_av_frame_alloc)() = nullptr;
+AVPacket *(*ptr_av_packet_alloc)() = nullptr;
+int (*ptr_av_get_bytes_per_sample)(AVSampleFormat sample_fmt) = nullptr;
+int (*ptr_av_sample_fmt_is_planar)(AVSampleFormat sample_fmt) = nullptr;
 int (*ptr_av_seek_frame)(AVFormatContext *s, int stream_index, int64_t timestamp, int flags) = nullptr;
 void (*ptr_avcodec_flush_buffers)(AVCodecContext *avctx) = nullptr;
 int (*ptr_av_read_frame)(AVFormatContext *s, AVPacket *pkt) = nullptr;
@@ -60,10 +60,10 @@ void (*ptr_av_packet_free)(AVPacket **pkt) = nullptr;
 int (*ptr_avcodec_close)(AVCodecContext *avctx) = nullptr;
 void (*ptr_avcodec_free_context)(AVCodecContext **avctx) = nullptr;
 int64_t (*ptr_av_get_default_channel_layout)(int nb_channels) = nullptr;
-struct SwrContext *(*ptr_swr_alloc_set_opts)(struct SwrContext *s, int64_t out_ch_layout, enum AVSampleFormat out_sample_fmt, int out_sample_rate, int64_t in_ch_layout, enum AVSampleFormat in_sample_fmt, int in_sample_rate, int log_offset, void *log_ctx) = nullptr;
-int (*ptr_swr_init)(struct SwrContext *s) = nullptr;
-void (*ptr_swr_free)(struct SwrContext **s) = nullptr;
-int (*ptr_swr_convert)(struct SwrContext *s, uint8_t **out, int out_count, const uint8_t **in, int in_count) = nullptr;
+SwrContext *(*ptr_swr_alloc_set_opts)(struct SwrContext *s, int64_t out_ch_layout, AVSampleFormat out_sample_fmt, int out_sample_rate, int64_t in_ch_layout, AVSampleFormat in_sample_fmt, int in_sample_rate, int log_offset, void *log_ctx) = nullptr;
+int (*ptr_swr_init)(SwrContext *s) = nullptr;
+void (*ptr_swr_free)(SwrContext **s) = nullptr;
+int (*ptr_swr_convert)(SwrContext *s, uint8_t **out, int out_count, const uint8_t **in, int in_count) = nullptr;
 
 static void* handle_avutil = nullptr;
 static void* handle_avcodec = nullptr;
@@ -101,14 +101,14 @@ get_library_names(const char* libname, const int versions[])
 static void*
 load_library(const char* name, const int versions[])
 {
-    auto names = get_library_names(name, versions);
+    auto possible_filenames = get_library_names(name, versions);
 
     void* h = nullptr;
-    for (const auto& name : names) {
+    for (const auto& filename : possible_filenames) {
 #ifdef _WIN32
-        h = (void*)dlopen(name.c_str(), 0);
+        h = (void*)dlopen(filename.c_str(), 0);
 #else
-        h = dlopen(name.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+        h = dlopen(filename.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 #endif
         if (h) break;
     }
