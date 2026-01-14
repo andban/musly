@@ -27,3 +27,12 @@ if(MSVC)
         VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
 endif()
+
+if(WIN32)
+    set_tests_properties(
+        selftest
+        PROPERTIES
+            ENVIRONMENT_MODIFICATION
+                "PATH=path_list_prepend:$<JOIN:$<TARGET_RUNTIME_DLL_DIRS:selftest>,\;>"
+    )
+endif()

@@ -46,6 +46,5 @@ jobs:
 
       - name: Run tests
         shell: bash
-        if: ${{ matrix.platform != 'windows-latest' }} # for some reason an win api dll is missing?!
         run: |
           ctest --test-dir build/test -C Release
