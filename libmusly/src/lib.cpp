@@ -179,6 +179,11 @@ musly_jukebox_poweron(
     musly::decoder* d = static_cast<musly::decoder*>(
             musly::plugins::instantiate_plugin(
                     musly::plugins::DECODER_TYPE, decoder_str));
+    if (!d && decoder)
+    {
+        delete m;
+        return NULL;
+    }
 
     // if we succeeded in both, return the jukebox!
     musly_jukebox* mj = new struct _musly_jukebox;
@@ -196,6 +201,7 @@ musly_jukebox_poweron(
         mj->decoder = nullptr;
         mj->decoder_name = nullptr;
     }
+
 
     return mj;
 }
