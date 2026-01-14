@@ -72,7 +72,7 @@ decoder::decodeto_22050hz_mono_float(
     const auto samples_read = file->read(samples_needed, &decoded_pcm[0]);
     MINILOG(logTRACE) << "decoder: " << filename << " decoding finalized.";
 
-    return {&decoded_pcm[0], &decoded_pcm[samples_read]};
+    return {decoded_pcm.begin(), decoded_pcm.begin() + samples_read};
 }
 
 
