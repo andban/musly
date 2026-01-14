@@ -75,8 +75,7 @@ target_include_directories(
 # add common source files
 target_sources(
     libmusly
-    PRIVATE src/decoders/none.cpp
-            src/methods/mandelellis.cpp
+    PRIVATE src/methods/mandelellis.cpp
             src/methods/timbre.cpp
             src/plugins.cpp
             src/method.cpp
@@ -88,7 +87,6 @@ target_sources(
             src/mfcc.cpp
             src/gaussianstatistics.cpp
             src/mutualproximity.cpp
-            src/decoders/wav_writer.cpp
             src/lib.cpp
     PUBLIC FILE_SET
            HEADERS
