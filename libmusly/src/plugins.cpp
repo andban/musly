@@ -31,7 +31,7 @@ plugins::instantiate_plugin(
     if (classname.length() > 0) {
         i = get_plugin_table().find(classname);
         if (i != get_plugin_table().end()) {
-            if (i->second->get_type() == type) {
+            if (i->second->get_type() == type && i->second->is_available()) {
                 plugin* pl = i->second->create();
                 return pl;
             }
@@ -44,7 +44,7 @@ plugins::instantiate_plugin(
         plugin_creator* pc = NULL;
         std::string name;
         while (i != get_plugin_table().end()) {
-            if (i->second->get_type() == type) {
+            if (i->second->get_type() == type && i->second->is_available()) {
                 int cur_p = i->second->get_priority();
                 if (cur_p > p) {
                     p = cur_p;
@@ -87,7 +87,7 @@ plugins::get_plugins(
 
     int added = 0;
     while (i != p.end()) {
-        if (i->second->get_type() == type) {
+        if (i->second->get_type() == type && i->second->is_available()) {
             if (added != 0) {
                 pn.append(",");
             }

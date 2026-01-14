@@ -28,6 +28,7 @@ public:
 
     virtual ~plugin_creator() { };
 
+    virtual bool is_available() { return true; }
     virtual int get_type() = 0;
     virtual int get_priority() = 0;
     virtual plugin* create() = 0;

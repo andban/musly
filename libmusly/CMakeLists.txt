@@ -14,7 +14,7 @@ target_compile_options(libmusly
 # fix preprocessor weirdness on windows
 if(WIN32 OR MINGW)
     target_compile_definitions(libmusly
-        PRIVATE 
+        PRIVATE
             -DNOMINMAX
             -D_USE_MATH_DEFINES
     )
@@ -37,11 +37,11 @@ if(musly_IPO_SUPPORTED)
     set_target_properties(libmusly PROPERTIES
         INTERPROCEDURAL_OPTIMIZATION TRUE
     )
-endif()   
+endif()
 
 # only use MPL2 code from Eigen library
 target_compile_definitions(libmusly
-    PRIVATE 
+    PRIVATE
         -DEIGEN_MPL2_ONLY
 )
 
@@ -53,29 +53,28 @@ if(BUILD_STATIC)
 endif()
 
 # create header file containing the current project version
-configure_file (
+configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/src/version.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/src/version.h"
 )
 
 # set include directories
 target_include_directories(libmusly
-    PRIVATE 
+    PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_BINARY_DIR}/src
-    INTERFACE 
+    INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
 
 # add common source files
-target_sources(libmusly
+target_sources(
+    libmusly
     PRIVATE
-        src/decoders/none.cpp
         src/methods/mandelellis.cpp
         src/methods/timbre.cpp
-        src/resampler.cpp
         src/plugins.cpp
         src/method.cpp
         src/decoder.cpp
@@ -87,45 +86,54 @@ target_sources(libmusly
         src/gaussianstatistics.cpp
         src/mutualproximity.cpp
         src/lib.cpp
-    PUBLIC 
-        FILE_SET HEADERS
-            BASE_DIRS 
-                include 
-            FILES
-                include/musly/musly.h
-                include/musly/musly_types.h
+    PUBLIC
+        FILE_SET
+           HEADERS
+       BASE_DIRS
+           include
+       FILES
+           include/musly/musly.h
+           include/musly/musly_types.h
 )
 
 # add common link libraries
 target_link_libraries(libmusly
     PRIVATE
         kissfft::kissfft-float
-        resample::resample
         Eigen3::Eigen
 )
 
 # enable libav decoder support when available
 if(LIBAV_FOUND)
     target_sources(libmusly
-        PRIVATE src/decoders/libav.cpp
-    )
-    target_link_libraries(libmusly
-        PRIVATE ${LIBAV_LIBRARIES}
+        PRIVATE
+            src/decoders/libav.cpp
+            src/decoders/libav_file.cpp
+            src/decoders/libav_functions.cpp
     )
     target_include_directories(libmusly
         PRIVATE ${LIBAV_INCLUDE_DIRS}
     )
-    target_compile_definitions(libmusly 
+    target_compile_definitions(libmusly
         PRIVATE -DMUSLY_DECODER_LIBAV
     )
 
+    if(NOT WIN32)
+        target_link_libraries(libmusly
+            PRIVATE ${CMAKE_DL_LIBS}
+        )
+    endif()
+
     if(EXISTS "${LIBAV_INCLUDE_DIRS}/libavutil/channel_layout.h")
-        set_source_files_properties(decoders/libav.cpp PROPERTIES
-            COMPILE_FLAGS "-DHAVE_AVUTIL_CHANNEL_LAYOUT"
+        set_source_files_properties(decoders/libav.cpp
+            PROPERTIES
+                COMPILE_FLAGS "-DHAVE_AVUTIL_CHANNEL_LAYOUT"
         )
     endif()
 elseif(LINUX)
-    message(WARNING "No decoder library found! You'll only be able to analyze already decoded audio data")
+    message(WARNING
+        "No decoder library found! You'll only be able to analyze already decoded audio data"
+    )
 endif()
 
 # enable coreaudio decoder support when building for macos
@@ -134,8 +142,10 @@ if(APPLE)
     find_library(COREFOUNDATION_LIBRARY CoreFoundation)
     mark_as_advanced(AUDIOTOOLBOX_LIBRARY COREFOUNDATION_LIBRARY)
 
-    target_sources(libmusly 
-        PRIVATE src/decoders/coreaudio.cpp
+    target_sources(libmusly
+        PRIVATE
+            src/decoders/coreaudio.cpp
+            src/decoders/coreaudio_file.cpp
     )
     target_link_libraries(libmusly
         PRIVATE
@@ -149,8 +159,10 @@ endif()
 
 # enable mediafoundation decoder support when building for windows
 if(WIN32 OR MINGW)
-    target_sources(libmusly 
-        PRIVATE src/decoders/mediafoundation.cpp
+    target_sources(libmusly
+        PRIVATE
+            src/decoders/mediafoundation.cpp
+            src/decoders/mediafoundation_file.cpp
     )
     target_link_libraries(libmusly
         PRIVATE
@@ -166,23 +178,28 @@ if(WIN32 OR MINGW)
     )
 endif()
 
-if(WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND NOT BUILD_STATIC)
-  # cmake-format: off
-  target_link_options(libmusly
-    PRIVATE
-        -static-libgcc
-        -static-libstdc++
-        -Wl,-Bstatic,--whole-archive
-        -lwinpthread
-        -Wl,--no-whole-archive
-  )
-  # cmake-format: on
+if(WIN32
+   AND CMAKE_CXX_COMPILER_ID MATCHES "GNU"
+   AND NOT BUILD_STATIC
+)
+    # cmake-format: off
+    target_link_options(libmusly
+        PRIVATE
+            -static-libgcc
+            -static-libstdc++
+            -Wl,-Bstatic,--whole-archive
+            -lwinpthread
+            -Wl,--no-whole-archive
+    )
+    # cmake-format: on
 endif()
 
-install(TARGETS libmusly 
+install(
+    TARGETS libmusly
     EXPORT MuslyTargets
-    LIBRARY DESTINATION  ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION  ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION  ${CMAKE_INSTALL_BINDIR}
-    FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            FILE_SET HEADERS
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )

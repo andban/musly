@@ -179,7 +179,8 @@ musly_jukebox_poweron(
     musly::decoder* d = static_cast<musly::decoder*>(
             musly::plugins::instantiate_plugin(
                     musly::plugins::DECODER_TYPE, decoder_str));
-    if (!d) {
+    if (!d && decoder)
+    {
         delete m;
         return NULL;
     }
@@ -191,10 +192,16 @@ musly_jukebox_poweron(
     method_str.copy(mj->method_name, method_str.size());
     mj->method_name[method_str.size()] = '\0';
 
-    mj->decoder = d;
-    mj->decoder_name = new char[decoder_str.size()+1];
-    decoder_str.copy(mj->decoder_name, decoder_str.size());
-    mj->decoder_name[decoder_str.size()] = '\0';
+    if (d) {
+        mj->decoder = d;
+        mj->decoder_name = new char[decoder_str.size()+1];
+        decoder_str.copy(mj->decoder_name, decoder_str.size());
+        mj->decoder_name[decoder_str.size()] = '\0';
+    } else {
+        mj->decoder = nullptr;
+        mj->decoder_name = nullptr;
+    }
+
 
     return mj;
 }

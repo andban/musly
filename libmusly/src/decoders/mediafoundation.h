@@ -9,11 +9,9 @@
 #ifndef MUSLY_DECODERS_MEDIAFOUNDATION_H_
 #define MUSLY_DECODERS_MEDIAFOUNDATION_H_
 
-
 #include "decoder.h"
 
-
-namespace musly { namespace decoders {
+namespace musly::decoders {
 
 class mediafoundation : public musly::decoder
 {
@@ -22,13 +20,11 @@ class mediafoundation : public musly::decoder
 public:
     mediafoundation();
 
-    virtual ~mediafoundation();
-
-    virtual std::vector<float>
-    decodeto_22050hz_mono_float(const std::string& file, float excerpt_length, float excerpt_start);
+private:
+    std::unique_ptr<decoder_file> open_file(const std::string& filename) override;
 };
 
-}} // namespace musly::decoders
+} // namespace musly::decoders
 
 
 #endif // !MUSLY_DECODERS_MEDIAFOUNDATION_H_

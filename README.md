@@ -126,11 +126,11 @@ $ cmake --build build
 $ sudo cmake --install build
 ```
 
-If you do not have packages for libresample or kissfft installed and/or do not want
-to use them, you can instruct musly to use its own copies of these libraries:
+If you do not have a package for kissfft installed and/or do not want
+to use them, you can instruct musly to use its own copies of this library:
 
 ```bash
-$ cmake -S . -B build -DMUSLY_USE_OWN_LIBRESAMPLE=TRUE -DMUSLY_USE_OWN_LIBKISSFFT=TRUE
+$ cmake -S . -B build -DMUSLY_USE_OWN_LIBKISSFFT=TRUE
 ```
 
 To perform a self-test of the library, optionally run (still inside `build`):

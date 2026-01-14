@@ -13,25 +13,50 @@
 #ifndef MUSLY_DECODER_H_
 #define MUSLY_DECODER_H_
 
-#include <string>
-#include <vector>
 #include "plugins.h"
 
+#include <minilog.h>
+#include <string>
+#include <vector>
+#include <memory>
+#include <cstdint>
+
 namespace musly {
+
+class decoder_file
+{
+public:
+    decoder_file(const std::string& filename) : _filename(filename) {}
+    virtual ~decoder_file() = default;
+
+    virtual float duration() const = 0;
+
+    virtual bool open() = 0;
+    virtual bool seek(float position) = 0;
+    virtual int64_t read(size_t samples, float* buffer) = 0;
+
+protected:
+    const std::string _filename;
+
+    static constexpr int TARGET_SAMPLE_RATE = 22050;
+    static constexpr int TARGET_CHANNELS = 1;
+};
 
 class decoder :
         public plugin
 {
 public:
-    decoder();
-    virtual ~decoder();
+    decoder() = default;
+    virtual ~decoder() = default;
 
-    virtual std::vector<float>
+    std::vector<float>
     decodeto_22050hz_mono_float(
-            const std::string& file,
+            const std::string& filename,
             float excerpt_length,
-            float excerpt_start) = 0;
+            float excerpt_start);
 
+protected:
+    virtual std::unique_ptr<decoder_file> open_file(const std::string& filename) = 0;
 };
 
 /** A macro to facilitating registering a decoder class with musly. This macro
@@ -56,8 +81,19 @@ private: \
 #define MUSLY_DECODER_REGIMPL(classname, priority) \
     const plugin_creator_impl<classname> classname::creator(#classname, \
             plugins::DECODER_TYPE, priority);
+
+#define MUSLY_DECODER_REGIMPL_DYNAMIC(classname, priority, library_loader) \
+    class classname##_creator : public plugin_creator_impl<classname> { \
+    public: \
+        classname##_creator() : plugin_creator_impl<classname>(#classname, plugins::DECODER_TYPE, priority) {} \
+        bool is_available() override { \
+            return library_loader(); \
+        } \
+    }; \
+    static const classname##_creator creator;
 #else
 #define MUSLY_DECODER_REGIMPL(classname, priority)
+#define MUSLY_DECODER_REGIMPL_DYNAMIC(classname, priority, library_loader)
 #endif
 
 /** Alternative form for MUSLY_DECODER_REGIMPL to be used for static builds of

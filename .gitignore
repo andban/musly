@@ -1,4 +1,5 @@
 build/
+cmake-build*/
 
 # Compiled Object files
 *.slo
@@ -19,4 +20,6 @@ libmusly/external
 
 # Other files
 .vscode/
-
+.idea/
+.direnv/
+.envrc

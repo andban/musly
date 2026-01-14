@@ -22,29 +22,18 @@ extern "C" {
 namespace musly {
 namespace decoders {
 
-class libav :
-    public musly::decoder
+class libav : public decoder
 {
+#ifndef MUSLY_DECODER_LIBAV
     MUSLY_DECODER_REGCLASS(libav);
-
-private:
-    int
-    samples_tofloat(
-            void* const out,
-            const void* const in,
-            const int out_stride,
-            const int in_stride,
-            const AVSampleFormat in_fmt,
-            int len);
+#endif
 
 public:
     libav();
 
-    virtual std::vector<float>
-    decodeto_22050hz_mono_float(
-            const std::string& file,
-            float excerpt_length,
-            float excerpt_start);
+private:
+    std::unique_ptr<decoder_file> open_file(const std::string& filename) override;
+
 };
 
 } /* namespace decoders */
